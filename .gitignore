@@ -1,0 +1,14 @@
+# Claves y secretos: NUNCA subir a GitHub
+.env
+.streamlit/secrets.toml
+*service_account*.json
+*-*.json
+
+# Datos de alumnos: viven en Drive, no en GitHub
+estudiantes/
+estudiantes_backup/
+enunciados/
+redacciones/
+
+__pycache__/
+*.pyc
