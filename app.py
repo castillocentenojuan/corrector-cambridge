@@ -147,6 +147,29 @@ except Exception as e:
     st.error(f"❌ No se pudo acceder a Google Drive: {e}")
     st.info("Comprueba que la carpeta está compartida como **Editor** con el email de la "
             "cuenta de servicio y que DRIVE_FOLDER_ID es correcto (ver GUIA_STREAMLIT.md).")
+
+    # ── Diagnóstico: qué ve realmente la cuenta de servicio ──
+    with st.expander("🔍 Diagnóstico", expanded=True):
+        try:
+            d = get_drive()
+            st.markdown(f"**Cuenta de servicio que usa la web:** `{d.service_account_email}`")
+            st.markdown(f"**DRIVE_FOLDER_ID configurado:** `{d.root_folder_id}` "
+                        f"({len(d.root_folder_id)} caracteres)")
+            visibles = d.diagnose()
+            if not visibles:
+                st.warning("La cuenta de servicio **no ve ninguna carpeta**: no se le ha compartido "
+                           "nada, o el dominio del colegio no permite que acceda.")
+            else:
+                st.markdown("**Carpetas que la cuenta de servicio puede ver:**")
+                st.dataframe(
+                    [{"Nombre": f["name"], "ID": f["id"],
+                      "Propietario": ", ".join(o.get("emailAddress", "") for o in f.get("owners", [])),
+                      "Unidad compartida": "sí" if f.get("driveId") else "no"}
+                     for f in visibles],
+                    hide_index=True, width="stretch",
+                )
+        except Exception as diag_error:
+            st.write(f"No se pudo hacer el diagnóstico: {diag_error}")
     st.stop()
 
 top_l, top_r = st.columns([4, 1])

@@ -89,6 +89,21 @@ class DriveClient:
             raise ValueError("El DRIVE_FOLDER_ID no corresponde a una carpeta.")
         return meta["name"]
 
+    def diagnose(self) -> list:
+        """
+        Carpetas que la cuenta de servicio puede ver (las compartidas con ella).
+        Sirve para detectar si el problema es el ID o que no se ha compartido.
+        """
+        resp = self.service.files().list(
+            q=f"mimeType = '{MIME_FOLDER}' and trashed = false",
+            fields="files(id, name, owners(emailAddress), driveId)",
+            pageSize=50,
+            supportsAllDrives=True,
+            includeItemsFromAllDrives=True,
+            corpora="allDrives",
+        ).execute(num_retries=3)
+        return resp.get("files", [])
+
     def list_excels(self) -> list:
         """Los .xlsx de estudiantes/."""
         folder = self.find_subfolder(self.root_folder_id, "estudiantes")
